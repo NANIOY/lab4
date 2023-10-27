@@ -4,6 +4,10 @@ require("dotenv").config();
 const app = express();
 const port = 3000;
 
+// enable cors
+const cors = require("cors");
+app.use(cors());
+
 // connect to mongodb
 mongoose.connect(process.env.MONGODB);
 
