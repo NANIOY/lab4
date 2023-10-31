@@ -8,8 +8,11 @@ const port = 3000;
 const cors = require("cors");
 app.use(cors());
 
-// connect to mongodb
-mongoose.connect(process.env.MONGODB);
+const mongoose = require("mongoose");
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
 // console log .env MONGODB
 console.log(process.env.MONGODB);
