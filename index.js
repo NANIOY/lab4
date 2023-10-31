@@ -38,7 +38,7 @@ app.get('/', async (req, res) => {
         const response = await fetch('https://nodejs-messages.onrender.com/api/v1/messages');
         const data = await response.json();
         console.log(data);
-        const messages = data.data[0].messages;
+        const messages = data[0].messages;
         res.render('index', { messages });
     } catch (err) {
         console.error(err);
