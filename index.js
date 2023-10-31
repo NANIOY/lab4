@@ -36,7 +36,8 @@ app.use("/api/v1/messages", messagesRouter);
 app.get('/', async (req, res) => {
     try {
         const response = await fetch('https://nodejs-messages.onrender.com/api/v1/messages');
-        const messages = await response.json();
+        const data = await response.json();
+        const messages = data[0].messages;
         res.render('index', { messages });
     } catch (err) {
         console.error(err);
