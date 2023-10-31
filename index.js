@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const path = require('path');
 const app = express();
 const port = 3000;
 
@@ -20,6 +21,11 @@ console.log(process.env.MONGODB);
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 
+// configure pug
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views")); // create "views" directory
+
+
 // import routes
 const messagesRouter = require("./routes/api/v1/messages");
 app.use(express.json());
@@ -27,6 +33,17 @@ app.use(express.json());
 // use routes
 app.use("/api/v1/messages", messagesRouter);
 
+// define route to render pug template
+app.get('/', async (req, res) => {
+    try {
+      const messages = await Message.find({});
+      res.render('index', { messages });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+  
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });
