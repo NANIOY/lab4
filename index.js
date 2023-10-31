@@ -10,8 +10,8 @@ const cors = require("cors");
 app.use(cors());
 
 mongoose.connect(process.env.MONGODB, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 });
 
 // console log .env MONGODB
@@ -21,10 +21,9 @@ console.log(process.env.MONGODB);
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 
-// configure pug
+// configure Pug
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views")); // create "views" directory
-
 
 // import routes
 const messagesRouter = require("./routes/api/v1/messages");
@@ -33,17 +32,18 @@ app.use(express.json());
 // use routes
 app.use("/api/v1/messages", messagesRouter);
 
-// define route to render pug template
+// define route to render Pug template
 app.get('/', async (req, res) => {
     try {
-      const messages = await Message.find({});
-      res.render('index', { messages });
+        const response = await fetch('https://nodejs-messages.onrender.com/api/v1/messages');
+        const messages = await response.json();
+        res.render('index', { messages });
     } catch (err) {
-      console.error(err);
-      res.status(500).send('Internal Server Error');
+        console.error(err);
+        res.status(500).send('Internal Server Error');
     }
-  });
-  
+});
+
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });
