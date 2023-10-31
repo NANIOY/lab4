@@ -8,7 +8,6 @@ const port = 3000;
 const cors = require("cors");
 app.use(cors());
 
-const mongoose = require("mongoose");
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
