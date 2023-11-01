@@ -1,55 +1,54 @@
-// require the Message model
 const Message = require("../../../models/Message");
+const User = require("../../../models/User");
 
 const index = async (req, res) => {
-    try {
-        let messages = await Message.find({}).populate("user");
-
-        res.json({
-            status: "success",
-            message: "GET all messages",
-            data: [
-                {
-                    messages: messages.map((message) => ({
-                        _id: message._id,
-                        message: message.message,
-                        user: message.user,
-                        __v: message.__v,
-                    })),
-                },
-            ],
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
-    }
+    let messages = await Message.find({}).populate({
+        path: "user",
+        select: "username",
+    });
+    res.json({
+        status: "success",
+        message: "GET all messages",
+        data: [
+            {
+                messages: messages,
+            },
+        ],
+    });
 };
 
 const create = async (req, res) => {
-    let message = req.body.message;
-    let user = req.body.user;
+    const messageText = req.body.message;
+    const username = req.body.user;
 
-    try {
-        const m = new Message({
-            message: message,
-            user: user,
-        });
+    let user = await User.findOne({ username });
 
-        const savedMessage = await m.save();
-
-        res.json({
-            status: "success",
-            message: "POST a new message",
-            data: [
-                {
-                    message: savedMessage,
-                },
-            ],
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
+    if (!user) {
+        user = new User({ username });
+        await user.save();
     }
+
+    const newMessage = new Message({
+        message: messageText,
+        user: user,
+    });
+
+    await newMessage.save();
+
+    res.json({
+        status: "success",
+        message: "POST a new message",
+        data: [
+            {
+                message: {
+                    message: newMessage.message,
+                    user: user.username,
+                    _id: newMessage._id,
+                    __v: newMessage.__v,
+                },
+            },
+        ],
+    });
 };
 
 module.exports.index = index;
