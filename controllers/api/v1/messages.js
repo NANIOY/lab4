@@ -124,9 +124,30 @@ const updateMessage = async (req, res) => {
     }
 };
 
+const deleteMessage = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const message = await Message.findByIdAndDelete(id);
+
+        if (!message) {
+            return res.status(404).json({ status: "error", message: "Message not found" });
+        }
+
+        res.json({
+            status: "success",
+            message: "The message was removed",
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Internal Server Error" });
+    }
+};
+
 module.exports = {
     index,
     create,
     getMessageById,
     updateMessage,
+    deleteMessage,
 };
