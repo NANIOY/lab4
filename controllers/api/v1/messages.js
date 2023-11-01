@@ -72,5 +72,32 @@ const create = async (req, res) => {
     });
 };
 
-module.exports.index = index;
-module.exports.create = create;
+const getMessageById = async (req, res) => {
+    try {
+        const message = await Message.findById(req.params.id).populate("user", "username");
+
+        if (!message) {
+            return res.status(404).json({ status: "error", message: "Message not found" });
+        }
+
+        res.json({
+            status: "success",
+            message: "GET a message by ID",
+            data: {
+                message: {
+                    message: message.message,
+                    user: message.user.username,
+                },
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Internal Server Error" });
+    }
+};
+
+module.exports = {
+    index,
+    create,
+    getMessageById,
+};
