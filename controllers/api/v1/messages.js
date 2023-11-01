@@ -10,7 +10,7 @@ const index = async (req, res) => {
             messages = await Message.find({})
                 .populate({
                     path: "user",
-                    match: { username }, // Filter by the provided username
+                    match: { username },
                 });
         } else {
             messages = await Message.find({}).populate("user");
@@ -96,8 +96,37 @@ const getMessageById = async (req, res) => {
     }
 };
 
+const updateMessage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { message: updatedMessage } = req.body;
+
+        const message = await Message.findByIdAndUpdate(id, { message: updatedMessage }, { new: true })
+            .populate("user", "username");
+
+        if (!message) {
+            return res.status(404).json({ status: "error", message: "Message not found" });
+        }
+
+        res.json({
+            status: "success",
+            message: "Message updated successfully",
+            data: {
+                message: {
+                    message: message.message,
+                    user: message.user.username,
+                },
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Internal Server Error" });
+    }
+};
+
 module.exports = {
     index,
     create,
     getMessageById,
+    updateMessage,
 };
