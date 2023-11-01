@@ -5,7 +5,7 @@ const index = async (req, res) => {
     try {
         // get the username from the request query
         const { username } = req.query;
-        
+
         // fetch all messages and populate the 'user' field with the 'username' attribute
         const messages = await Message.find({}).populate("user", "username");
 
