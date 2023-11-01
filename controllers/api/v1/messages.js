@@ -4,33 +4,14 @@ const User = require("../../../models/User");
 const index = async (req, res) => {
     try {
         const { username } = req.query;
-        let messages;
+        const messages = await Message.find({}).populate("user", "username");
 
-        if (username) {
-            messages = await Message.find({})
-                .populate({
-                    path: "user",
-                    match: { username },
-                });
-        } else {
-            messages = await Message.find({}).populate("user");
-        }
-
-        const filteredMessages = messages.filter((message) => message.user !== null);
+        const filteredMessages = username ? messages.filter((message) => message.user.username === username) : messages;
 
         res.json({
             status: "success",
             message: "GET messages for user",
-            data: [
-                {
-                    messages: filteredMessages.map((message) => ({
-                        _id: message._id,
-                        message: message.message,
-                        user: message.user.username,
-                        __v: message.__v,
-                    })),
-                },
-            ],
+            data: [{ messages: filteredMessages }],
         });
     } catch (error) {
         console.error(error);
@@ -39,36 +20,16 @@ const index = async (req, res) => {
 };
 
 const create = async (req, res) => {
-    const messageText = req.body.message;
-    const username = req.body.user;
+    const { message: messageText, user: username } = req.body;
 
-    let user = await User.findOne({ username });
+    let user = await User.findOne({ username }) || new User({ username });
 
-    if (!user) {
-        user = new User({ username });
-        await user.save();
-    }
-
-    const newMessage = new Message({
-        message: messageText,
-        user: user,
-    });
-
-    await newMessage.save();
+    const newMessage = await Message.create({ message: messageText, user });
 
     res.json({
         status: "success",
         message: "POST a new message",
-        data: [
-            {
-                message: {
-                    message: newMessage.message,
-                    user: user.username,
-                    _id: newMessage._id,
-                    __v: newMessage.__v,
-                },
-            },
-        ],
+        data: [{ message: newMessage }],
     });
 };
 
@@ -83,12 +44,7 @@ const getMessageById = async (req, res) => {
         res.json({
             status: "success",
             message: "GET a message by ID",
-            data: {
-                message: {
-                    message: message.message,
-                    user: message.user.username,
-                },
-            },
+            data: { message },
         });
     } catch (error) {
         console.error(error);
@@ -111,12 +67,7 @@ const updateMessage = async (req, res) => {
         res.json({
             status: "success",
             message: "Message updated successfully",
-            data: {
-                message: {
-                    message: message.message,
-                    user: message.user.username,
-                },
-            },
+            data: { message },
         });
     } catch (error) {
         console.error(error);
