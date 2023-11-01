@@ -4,20 +4,30 @@ const User = require("../../../models/User");
 const index = async (req, res) => {
     try {
         const { username } = req.query;
-        const messages = await Message.find({}).populate('user');
+        let messages;
 
-        const filteredMessages = messages.filter((message) => message.user && message.user.username === username);
+        if (username) {
+            messages = await Message.find({})
+                .populate({
+                    path: "user",
+                    match: { username }, // Filter by the provided username
+                });
+        } else {
+            messages = await Message.find({}).populate("user");
+        }
+
+        const filteredMessages = messages.filter((message) => message.user !== null);
 
         res.json({
-            status: 'success',
-            message: 'GET messages for user',
+            status: "success",
+            message: "GET messages for user",
             data: [
                 {
-                    messages: filteredMessages.map(({ _id, message, user, __v }) => ({
-                        _id,
-                        message,
-                        user: user.username,
-                        __v,
+                    messages: filteredMessages.map((message) => ({
+                        _id: message._id,
+                        message: message.message,
+                        user: message.user.username,
+                        __v: message.__v,
                     })),
                 },
             ],
@@ -29,7 +39,8 @@ const index = async (req, res) => {
 };
 
 const create = async (req, res) => {
-    const { message: messageText, user: username } = req.body;
+    const messageText = req.body.message;
+    const username = req.body.user;
 
     let user = await User.findOne({ username });
 
@@ -38,7 +49,12 @@ const create = async (req, res) => {
         await user.save();
     }
 
-    const newMessage = await Message.create({ message: messageText, user });
+    const newMessage = new Message({
+        message: messageText,
+        user: user,
+    });
+
+    await newMessage.save();
 
     res.json({
         status: "success",
